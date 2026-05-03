@@ -1,0 +1,2444 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyFlow — Smart Study Planner</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    :root {
+      --bg: #0d1117;
+      --bg2: #131920;
+      --bg3: #1a2332;
+      --card: #162030;
+      --border: #1e3048;
+      --gold: #e8b84b;
+      --gold2: #f5d07a;
+      --teal: #2dd4bf;
+      --red: #f87171;
+      --purple: #a78bfa;
+      --green: #4ade80;
+      --text: #e2eaf4;
+      --text2: #8ba3be;
+      --text3: #4a6580;
+      --high: #f87171;
+      --med: #fbbf24;
+      --low: #4ade80;
+      --font-display: 'Playfair Display', serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --sidebar-w: 260px;
+      --radius: 14px;
+      --shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+      --bar-bg: rgba(13, 17, 23, 0.85);
+    }
+    
+    :root[data-theme="light"] {
+      --bg: #f8fafc;
+      --bg2: #f1f5f9;
+      --bg3: #e2e8f0;
+      --card: #ffffff;
+      --border: #cbd5e1;
+      --gold: #d97706;
+      --gold2: #f59e0b;
+      --teal: #0d9488;
+      --red: #e11d48;
+      --purple: #7c3aed;
+      --green: #16a34a;
+      --text: #0f172a;
+      --text2: #334155;
+      --text3: #64748b;
+      --high: #e11d48;
+      --med: #d97706;
+      --low: #16a34a;
+      --shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+      --bar-bg: rgba(255, 255, 255, 0.85);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── SIDEBAR ─── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      z-index: 100;
+      transition: transform .35s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .sidebar-logo {
+      padding: 28px 24px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo-mark {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--gold), var(--teal));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .logo-text {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .logo-text span {
+      color: var(--gold);
+    }
+
+    .logo-sub {
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 2px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 16px 12px;
+      overflow-y: auto;
+    }
+
+    .nav-section-label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text3);
+      padding: 12px 12px 6px;
+      font-weight: 500;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      color: var(--text2);
+      font-size: 14px;
+      font-weight: 400;
+      transition: all .2s;
+      margin-bottom: 2px;
+      border: 1px solid transparent;
+    }
+
+    .nav-item:hover {
+      background: var(--bg3);
+      color: var(--text);
+    }
+
+    .nav-item.active {
+      background: linear-gradient(135deg, rgba(232, 184, 75, .15), rgba(45, 212, 191, .08));
+      color: var(--gold);
+      border-color: rgba(232, 184, 75, .2);
+      font-weight: 500;
+    }
+
+    .nav-icon {
+      font-size: 17px;
+      min-width: 20px;
+      text-align: center;
+    }
+
+    .nav-badge {
+      margin-left: auto;
+      background: var(--high);
+      color: #fff;
+      border-radius: 20px;
+      padding: 1px 7px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .streak-card {
+      background: linear-gradient(135deg, rgba(232, 184, 75, .12), rgba(45, 212, 191, .06));
+      border: 1px solid rgba(232, 184, 75, .2);
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .streak-num {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--gold);
+      line-height: 1;
+    }
+
+    .streak-label {
+      font-size: 11px;
+      color: var(--text2);
+      margin-top: 4px;
+    }
+
+    /* ─── TOPBAR ─── */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: var(--sidebar-w);
+      right: 0;
+      height: 64px;
+      background: var(--bar-bg);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+      gap: 16px;
+      z-index: 90;
+      transition: left .35s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .hamburger {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 22px;
+      padding: 4px;
+    }
+
+    .topbar-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .topbar-title span {
+      color: var(--text3);
+      font-size: 14px;
+      font-weight: 400;
+      font-family: var(--font-body);
+    }
+
+    .topbar-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .date-chip {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: var(--text2);
+      font-family: var(--font-mono);
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), var(--teal));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--bg);
+      cursor: pointer;
+    }
+
+    /* ─── MAIN ─── */
+    .main {
+      margin-left: var(--sidebar-w);
+      margin-top: 64px;
+      padding: 32px 28px;
+      min-height: calc(100vh - 64px);
+      transition: margin-left .35s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    /* ─── VIEWS ─── */
+    .view {
+      display: none;
+      animation: fadeUp .4s ease both;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ─── SECTION HEADER ─── */
+    .section-header {
+      margin-bottom: 24px;
+    }
+
+    .section-header h2 {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .section-header p {
+      color: var(--text2);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    /* ─── STATS GRID ─── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 20px;
+      position: relative;
+      overflow: hidden;
+      transition: all .3s cubic-bezier(.4, 0, .2, 1);
+      box-shadow: var(--shadow);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+      border-color: transparent;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+
+    .stat-card.gold::before {
+      background: linear-gradient(90deg, var(--gold), var(--gold2));
+    }
+
+    .stat-card.teal::before {
+      background: linear-gradient(90deg, var(--teal), #67e8f9);
+    }
+
+    .stat-card.purple::before {
+      background: linear-gradient(90deg, var(--purple), #c4b5fd);
+    }
+
+    .stat-card.green::before {
+      background: linear-gradient(90deg, var(--green), #86efac);
+    }
+
+    .stat-icon {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .stat-val {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text2);
+      margin-top: 2px;
+    }
+
+    .stat-sub {
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 6px;
+    }
+
+    /* ─── GRIDS ─── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .three-col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    /* ─── CARD ─── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      transition: transform .3s, box-shadow .3s;
+    }
+    
+    .card:hover {
+      box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .card-action {
+      font-size: 12px;
+      color: var(--gold);
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: var(--font-body);
+      font-weight: 500;
+      transition: opacity .2s;
+    }
+
+    .card-action:hover {
+      opacity: .7;
+    }
+
+    /* ─── TASK LIST (Dashboard) ─── */
+    .task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      transition: all .2s;
+      cursor: pointer;
+    }
+
+    .task-item:hover {
+      border-color: var(--text3);
+    }
+
+    .task-item.done {
+      opacity: .5;
+    }
+
+    .task-item.done .task-name {
+      text-decoration: line-through;
+    }
+
+    .task-check {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 11px;
+      transition: all .2s;
+    }
+
+    .task-check.checked {
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .task-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .task-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .task-meta {
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 2px;
+    }
+
+    .priority-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 20px;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .p-high {
+      background: rgba(248, 113, 113, .15);
+      color: var(--high);
+      border: 1px solid rgba(248, 113, 113, .3);
+    }
+
+    .p-med {
+      background: rgba(251, 191, 36, .15);
+      color: var(--med);
+      border: 1px solid rgba(251, 191, 36, .3);
+    }
+
+    .p-low {
+      background: rgba(74, 222, 128, .15);
+      color: var(--low);
+      border: 1px solid rgba(74, 222, 128, .3);
+    }
+
+    /* ─── PROGRESS ─── */
+    .prog-wrap {
+      margin-bottom: 14px;
+    }
+
+    .prog-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text2);
+      margin-bottom: 6px;
+    }
+
+    .prog-bar {
+      height: 8px;
+      background: var(--bg3);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .prog-fill {
+      height: 100%;
+      border-radius: 20px;
+      transition: width 1.2s ease;
+    }
+
+    /* ─── SCHEDULE ─── */
+    .schedule-day {
+      margin-bottom: 20px;
+    }
+
+    .day-label {
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text3);
+      font-weight: 500;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .day-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .schedule-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(30, 48, 72, .5);
+    }
+
+    .sch-time {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text3);
+      min-width: 50px;
+    }
+
+    .sch-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .sch-info .sch-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .sch-info .sch-sub {
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 1px;
+    }
+
+    .sch-dur {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--text3);
+      font-family: var(--font-mono);
+      background: var(--bg3);
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    /* ─── POMODORO ─── */
+    .pomodoro-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0;
+    }
+
+    .timer-ring-wrap {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      margin: 0 auto 24px;
+    }
+
+    .timer-ring {
+      width: 200px;
+      height: 200px;
+      transform: rotate(-90deg);
+    }
+
+    .timer-ring circle {
+      fill: none;
+      stroke-width: 6;
+      stroke-linecap: round;
+    }
+
+    .ring-bg {
+      stroke: var(--bg3);
+    }
+
+    .ring-fg {
+      stroke: var(--gold);
+      stroke-dasharray: 553;
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset .5s ease;
+    }
+
+    .timer-display {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .timer-time {
+      font-family: var(--font-mono);
+      font-size: 42px;
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: -1px;
+    }
+
+    .timer-mode-label {
+      font-size: 11px;
+      color: var(--text3);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .pom-modes {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .pom-mode-btn {
+      padding: 7px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg3);
+      color: var(--text2);
+      font-family: var(--font-body);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .pom-mode-btn.active {
+      background: rgba(232, 184, 75, .15);
+      border-color: rgba(232, 184, 75, .3);
+      color: var(--gold);
+    }
+
+    .pom-controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .pom-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      transition: all .2s;
+    }
+
+    .pom-btn.main-btn {
+      width: 64px;
+      height: 64px;
+      font-size: 24px;
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      color: var(--bg);
+      box-shadow: 0 4px 20px rgba(232, 184, 75, .4);
+    }
+
+    .pom-btn.main-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .pom-btn.sec-btn {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--text2);
+    }
+
+    .pom-btn.sec-btn:hover {
+      border-color: var(--text3);
+      color: var(--text);
+    }
+
+    .pom-sessions {
+      margin-top: 20px;
+      display: flex;
+      gap: 6px;
+    }
+
+    .pom-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background .3s;
+    }
+
+    .pom-dot.done {
+      background: var(--gold);
+    }
+
+    /* ─── TASK BOARD ─── */
+    .task-add-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .input-field {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      transition: border-color .2s;
+      outline: none;
+    }
+
+    .input-field:focus {
+      border-color: var(--gold);
+    }
+
+    .input-field::placeholder {
+      color: var(--text3);
+    }
+
+    .input-field.grow {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    select.input-field {
+      cursor: pointer;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      color: var(--bg);
+      box-shadow: 0 2px 12px rgba(232, 184, 75, .3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(232, 184, 75, .4);
+    }
+
+    .tasks-board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .board-col {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .board-col-title {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .col-count {
+      background: var(--bg3);
+      color: var(--text2);
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+    }
+
+    .board-task {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 10px;
+      transition: all .2s;
+      position: relative;
+    }
+
+    .board-task:hover {
+      border-color: var(--text3);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+
+    .board-task.done {
+      opacity: .5;
+    }
+
+    .board-task-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .board-task-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .subject-tag {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: rgba(167, 139, 250, .15);
+      color: var(--purple);
+      border: 1px solid rgba(167, 139, 250, .2);
+      font-weight: 500;
+    }
+
+    .due-tag {
+      font-size: 11px;
+      color: var(--text3);
+      font-family: var(--font-mono);
+    }
+
+    .delete-task {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
+      color: var(--text3);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 2px;
+      opacity: 0;
+      transition: opacity .2s;
+    }
+
+    .board-task:hover .delete-task {
+      opacity: 1;
+    }
+
+    .delete-task:hover {
+      color: var(--high);
+    }
+
+    /* ─── SUBJECTS ─── */
+    .subjects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .subject-card {
+      border-radius: var(--radius);
+      padding: 20px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .subject-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow);
+    }
+
+    .subj-icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .subj-name {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .subj-hours {
+      font-size: 12px;
+      opacity: .8;
+    }
+
+    .subj-prog-bar {
+      height: 4px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, .2);
+      margin-top: 12px;
+    }
+
+    .subj-prog-fill {
+      height: 100%;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, .7);
+    }
+
+    /* ─── CHART ─── */
+    .weekly-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      height: 120px;
+    }
+
+    .chart-bar-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      height: 100%;
+    }
+
+    .chart-bar {
+      width: 100%;
+      border-radius: 6px 6px 0 0;
+      min-height: 4px;
+      transition: height 1s ease;
+      position: relative;
+    }
+
+    .chart-bar:hover::after {
+      content: attr(data-val);
+      position: absolute;
+      top: -24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 11px;
+      white-space: nowrap;
+      color: var(--text);
+      font-family: var(--font-mono);
+    }
+
+    .chart-day {
+      font-size: 11px;
+      color: var(--text3);
+    }
+
+    /* ─── QUOTE ─── */
+    .quote-card {
+      background: linear-gradient(135deg, rgba(232, 184, 75, .1), rgba(45, 212, 191, .06));
+      border: 1px solid rgba(232, 184, 75, .2);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .quote-card::before {
+      content: '"';
+      font-family: var(--font-display);
+      font-size: 120px;
+      color: rgba(232, 184, 75, .08);
+      position: absolute;
+      top: -20px;
+      left: 10px;
+      line-height: 1;
+    }
+
+    .quote-text {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-style: italic;
+      color: var(--text2);
+      line-height: 1.6;
+      position: relative;
+      z-index: 1;
+    }
+
+    .quote-author {
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 8px;
+    }
+
+    /* ─── FOCUS LOG ─── */
+    .session-log {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .session-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--bg3);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .session-time {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text3);
+      min-width: 80px;
+    }
+
+    .session-subject {
+      flex: 1;
+      color: var(--text2);
+    }
+
+    .session-mins {
+      color: var(--teal);
+      font-weight: 600;
+      font-family: var(--font-mono);
+      font-size: 13px;
+    }
+
+    /* ─── EMPTY ─── */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text3);
+    }
+
+    .empty-state .empty-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+    }
+
+    /* ─── OVERLAY ─── */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .5);
+      z-index: 99;
+    }
+
+    /* ─── TOAST ─── */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 14px;
+      color: var(--text);
+      box-shadow: var(--shadow);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all .35s cubic-bezier(.4, 0, .2, 1);
+      z-index: 999;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* ─── BG ORBS ─── */
+    .bg-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: .04;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-orb-1 {
+      width: 500px;
+      height: 500px;
+      background: var(--gold);
+      top: -100px;
+      right: -100px;
+    }
+
+    .bg-orb-2 {
+      width: 400px;
+      height: 400px;
+      background: var(--teal);
+      bottom: -100px;
+      left: -100px;
+    }
+
+    .main>* {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 1024px) {
+      .tasks-board {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+
+      .three-col {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .sidebar-overlay {
+        display: block;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .35s;
+      }
+
+      .sidebar-overlay.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .topbar {
+        left: 0 !important;
+      }
+
+      .main {
+        margin-left: 0 !important;
+        padding: 20px 16px;
+      }
+
+      .hamburger {
+        display: flex;
+      }
+
+      .tasks-board {
+        grid-template-columns: 1fr;
+      }
+
+      .three-col {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .task-add-bar {
+        flex-direction: column;
+      }
+
+      .input-field.grow {
+        min-width: unset;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- SPLASH -->
+  <div class="splash" id="splash">
+    <div class="splash-logo">📚</div>
+    <div class="splash-text">Study<span>Flow</span></div>
+    <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+  </div>
+
+  <!-- AUTH SCREEN -->
+  <div class="auth-screen" id="auth-screen" style="display:none">
+    <div class="auth-bg">
+      <div class="auth-orb"></div>
+      <div class="auth-orb"></div>
+      <div class="auth-orb"></div>
+    </div>
+    <div class="auth-container">
+      <div class="auth-card">
+        <div class="auth-logo">
+          <div class="logo-icon" style="width:48px;height:48px;background:linear-gradient(135deg,var(--gold),var(--teal));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px">📚</div>
+          <div class="logo-text" style="font-family:var(--font-display);font-size:26px;font-weight:700;color:var(--text)">Study<span style="color:var(--gold)">Flow</span></div>
+        </div>
+        <div class="auth-subtitle">Your personalized study companion — from Class 5 to PhD</div>
+
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Sign In</button>
+          <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Create Account</button>
+        </div>
+
+        <div id="auth-error" class="auth-error"></div>
+
+        <!-- LOGIN FORM -->
+        <form class="auth-form" id="login-form" onsubmit="handleLogin(event)">
+          <div class="auth-field">
+            <label>Email Address</label>
+            <span class="field-icon">📧</span>
+            <input type="email" id="login-email" placeholder="you@example.com" required />
+          </div>
+          <div class="auth-field">
+            <label>Password</label>
+            <span class="field-icon">🔒</span>
+            <input type="password" id="login-pass" placeholder="Enter your password" required />
+          </div>
+          <label class="auth-remember">
+            <input type="checkbox" id="login-remember" /> Remember me on this device
+          </label>
+          <button type="submit" class="auth-btn">✨ Sign In to StudyFlow</button>
+          <div class="auth-switch">Don’t have an account? <a onclick="switchAuthTab('register')">Create one</a></div>
+        </form>
+
+        <!-- REGISTER FORM -->
+        <form class="auth-form hidden" id="register-form" onsubmit="handleRegister(event)">
+          <div class="auth-field">
+            <label>Full Name</label>
+            <span class="field-icon">👤</span>
+            <input type="text" id="reg-name" placeholder="e.g. Devesh Pandey" required />
+          </div>
+          <div class="auth-field">
+            <label>Email Address</label>
+            <span class="field-icon">📧</span>
+            <input type="email" id="reg-email" placeholder="you@example.com" required />
+          </div>
+          <div class="auth-field">
+            <label>Password</label>
+            <span class="field-icon">🔒</span>
+            <input type="password" id="reg-pass" placeholder="Min 4 characters" required minlength="4" />
+          </div>
+          <div class="auth-field">
+            <label>Education Level</label>
+            <div class="auth-edu-grid">
+              <div class="edu-option" onclick="selectEdu('class5-8',this)"><span class="edu-icon">📚</span>Class 5–8</div>
+              <div class="edu-option" onclick="selectEdu('class9-10',this)"><span class="edu-icon">📖</span>Class 9–10</div>
+              <div class="edu-option" onclick="selectEdu('class11-12',this)"><span class="edu-icon">🎓</span>Class 11–12</div>
+              <div class="edu-option" onclick="selectEdu('ug',this)"><span class="edu-icon">🏛️</span>Undergrad</div>
+              <div class="edu-option" onclick="selectEdu('pg',this)"><span class="edu-icon">📜</span>Postgrad</div>
+              <div class="edu-option" onclick="selectEdu('phd',this)"><span class="edu-icon">🔬</span>PhD</div>
+            </div>
+          </div>
+          <div class="auth-field">
+            <label>Institution (Optional)</label>
+            <span class="field-icon">🏫</span>
+            <input type="text" id="reg-institution" placeholder="e.g. IIT Delhi, DPS School" />
+          </div>
+          <button type="submit" class="auth-btn">🚀 Create My Account</button>
+          <div class="auth-switch">Already have an account? <a onclick="switchAuthTab('login')">Sign in</a></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="particles-canvas"></canvas>
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+  <!-- COMMAND PALETTE -->
+  <div class="cmd-overlay" id="cmd-overlay" onclick="if(event.target===this)closeCmdPalette()">
+    <div class="cmd-box">
+      <div class="cmd-input-wrap">
+        <span class="cmd-icon">🔍</span>
+        <input class="cmd-input" id="cmd-search" placeholder="Type a command..." oninput="filterCmds(this.value)" autocomplete="off" />
+        <span class="cmd-kbd">ESC</span>
+      </div>
+      <div class="cmd-results" id="cmd-results"></div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">
+        <div class="logo-icon">📚</div>
+        <div>
+          <div class="logo-text">Study<span>Flow</span></div>
+          <div class="logo-sub">Smart Planner</div>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <div class="nav-item active" onclick="showView('dashboard',this)"><span class="nav-icon">🏠</span> Dashboard</div>
+      <div class="nav-item" onclick="showView('tasks',this)"><span class="nav-icon">✅</span> Task Planner <span
+          class="nav-badge" id="badge-tasks" style="display:none">0</span></div>
+      <div class="nav-item" onclick="showView('schedule',this)"><span class="nav-icon">📅</span> Schedule</div>
+      <div class="nav-section-label">Tools</div>
+      <div class="nav-item" onclick="showView('pomodoro',this)"><span class="nav-icon">⏱️</span> Pomodoro Timer</div>
+      <div class="nav-item" onclick="showView('subjects',this)"><span class="nav-icon">📖</span> Subjects</div>
+      <div class="nav-item" onclick="showView('analytics',this)"><span class="nav-icon">📊</span> Analytics</div>
+      <div class="nav-section-label">Extras</div>
+      <div class="nav-item" onclick="showView('notes',this)"><span class="nav-icon">📝</span> Notes</div>
+      <div class="nav-item" onclick="showView('goals',this)"><span class="nav-icon">🎯</span> Goals</div>
+      <div class="nav-item" onclick="showView('flashcards',this)"><span class="nav-icon">🃏</span> Flashcards</div>
+      <div class="nav-item" onclick="showView('resources',this)"><span class="nav-icon">📚</span> Resources</div>
+      <button class="music-btn" id="music-toggle" onclick="toggleAmbient()"><span class="nav-icon">🎵</span> Ambient Music</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="streak-card">
+        <div style="font-size:20px">🔥</div>
+        <div class="streak-num" id="streak-num">7</div>
+        <div class="streak-label">Day Study Streak</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div class="topbar-title" id="topbar-title">Dashboard <span>— Overview</span></div>
+    <div class="topbar-right">
+      <div class="date-chip" id="date-chip">—</div>
+      <div class="date-chip" style="cursor:pointer" onclick="openCmdPalette()" data-tip="Ctrl+K">⌘ Command</div>
+      <button class="theme-toggle" onclick="toggleAppTheme()" data-tip="Toggle Theme" id="theme-btn">☀️</button>
+      <button class="theme-toggle" onclick="exportData()" data-tip="Export Data">📤</button>
+      <div class="profile-dropdown">
+        <div class="avatar" onclick="toggleProfileMenu()">S</div>
+        <div class="profile-menu" id="profile-menu">
+          <div class="profile-menu-header">
+            <div class="profile-menu-name" id="pm-name">Student</div>
+            <div class="profile-menu-email" id="pm-email">—</div>
+            <div class="profile-menu-level" id="pm-level">—</div>
+          </div>
+          <button class="profile-menu-item" onclick="showView('dashboard',document.querySelectorAll('.nav-item')[0]);toggleProfileMenu()">📊 My Dashboard</button>
+          <button class="profile-menu-item" onclick="exportData();toggleProfileMenu()">📤 Export My Data</button>
+          <button class="profile-menu-item danger" onclick="AUTH.logout()">🚪 Sign Out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div class="view active" id="view-dashboard">
+      <div class="quote-card">
+        <div class="quote-text" id="quote-text">"The secret of getting ahead is getting started."</div>
+        <div class="quote-author" id="quote-author">— Mark Twain</div>
+      </div>
+      <div class="section-header">
+        <h2 id="greet-text">Good morning, Student! ✨</h2>
+        <p>Here's your study overview for today.</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card gold">
+          <div class="stat-icon">📝</div>
+          <div class="stat-val" id="stat-total">0</div>
+          <div class="stat-label">Total Tasks</div>
+          <div class="stat-sub" id="stat-done-sub">0 completed</div>
+        </div>
+        <div class="stat-card teal">
+          <div class="stat-icon">⏱️</div>
+          <div class="stat-val" id="stat-hours">0.0h</div>
+          <div class="stat-label">Study Hours Today</div>
+          <div class="stat-sub">Goal: 6h / day</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-val" id="stat-focus">0</div>
+          <div class="stat-label">Focus Sessions</div>
+          <div class="stat-sub">Pomodoro cycles done</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-icon">📈</div>
+          <div class="stat-val" id="stat-pct">0%</div>
+          <div class="stat-label">Today's Progress</div>
+          <div class="stat-sub" id="stat-remain">0 tasks remaining</div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="dot" style="background:var(--gold)"></span>Today's Tasks</div>
+            <button class="card-action" onclick="showView('tasks',document.querySelectorAll('.nav-item')[1])">View All
+              →</button>
+          </div>
+          <div class="task-list" id="dash-task-list">
+            <div class="empty-state">
+              <div class="empty-icon">📋</div>
+              <p>No tasks yet. Add some!</p>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="dot" style="background:var(--teal)"></span>Subject Progress</div>
+          </div>
+          <div id="dash-subj-prog" style="display:flex;flex-direction:column;gap:12px;margin-top:10px">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:20px" class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="dot" style="background:var(--purple)"></span>Today's Schedule</div>
+        </div>
+        <div class="schedule-item">
+          <div class="sch-time">08:00</div>
+          <div class="sch-dot" style="background:var(--gold)"></div>
+          <div class="sch-info">
+            <div class="sch-title">Mathematics — Calculus</div>
+            <div class="sch-sub">Chapter 5: Integration</div>
+          </div>
+          <div class="sch-dur">90 min</div>
+        </div>
+        <div class="schedule-item">
+          <div class="sch-time">10:00</div>
+          <div class="sch-dot" style="background:var(--teal)"></div>
+          <div class="sch-info">
+            <div class="sch-title">Physics — Thermodynamics</div>
+            <div class="sch-sub">Review notes + problems</div>
+          </div>
+          <div class="sch-dur">60 min</div>
+        </div>
+        <div class="schedule-item">
+          <div class="sch-time">12:30</div>
+          <div class="sch-dot" style="background:var(--green)"></div>
+          <div class="sch-info">
+            <div class="sch-title">☕ Break &amp; Lunch</div>
+            <div class="sch-sub">Rest your mind</div>
+          </div>
+          <div class="sch-dur">45 min</div>
+        </div>
+        <div class="schedule-item">
+          <div class="sch-time">14:00</div>
+          <div class="sch-dot" style="background:var(--purple)"></div>
+          <div class="sch-info">
+            <div class="sch-title">Chemistry — Organic Reactions</div>
+            <div class="sch-sub">Practice problems set B</div>
+          </div>
+          <div class="sch-dur">90 min</div>
+        </div>
+        <div class="schedule-item">
+          <div class="sch-time">16:00</div>
+          <div class="sch-dot" style="background:var(--red)"></div>
+          <div class="sch-info">
+            <div class="sch-title">English — Essay Writing</div>
+            <div class="sch-sub">Draft 2 of persuasive essay</div>
+          </div>
+          <div class="sch-dur">60 min</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TASKS -->
+    <div class="view" id="view-tasks">
+      <div class="section-header">
+        <h2>Task Planner</h2>
+        <p>Organize, prioritize, and track all your assignments.</p>
+      </div>
+      <div class="task-add-bar">
+        <input class="input-field grow" type="text" id="task-input" placeholder="Add a new task or assignment..."
+          onkeydown="if(event.key==='Enter')addTask()" />
+        <select class="input-field" id="task-subject">
+          <!-- Populated dynamically based on education level -->
+        </select>
+        <select class="input-field" id="task-priority">
+          <option value="high">🔴 High Priority</option>
+          <option value="med">🟡 Medium</option>
+          <option value="low">🟢 Low</option>
+        </select>
+        <input class="input-field" type="date" id="task-due" />
+        <button class="btn btn-primary" onclick="addTask()">+ Add Task</button>
+      </div>
+      <div class="tasks-board">
+        <div class="board-col">
+          <div class="board-col-title" style="color:var(--high)">🔴 High Priority <span class="col-count"
+              id="count-high">0</span></div>
+          <div id="col-high"></div>
+        </div>
+        <div class="board-col">
+          <div class="board-col-title" style="color:var(--med)">🟡 Medium Priority <span class="col-count"
+              id="count-med">0</span></div>
+          <div id="col-med"></div>
+        </div>
+        <div class="board-col">
+          <div class="board-col-title" style="color:var(--low)">🟢 Low Priority <span class="col-count"
+              id="count-low">0</span></div>
+          <div id="col-low"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCHEDULE -->
+    <div class="view" id="view-schedule">
+      <div class="section-header">
+        <h2>Weekly Schedule</h2>
+        <p>Your structured study plan for the week.</p>
+      </div>
+      <div class="card">
+        <div class="schedule-day">
+          <div class="day-label">Monday</div>
+          <div class="schedule-item">
+            <div class="sch-time">07:00</div>
+            <div class="sch-dot" style="background:var(--gold)"></div>
+            <div class="sch-info">
+              <div class="sch-title">Mathematics</div>
+              <div class="sch-sub">Algebra &amp; Calculus</div>
+            </div>
+            <div class="sch-dur">120 min</div>
+          </div>
+          <div class="schedule-item">
+            <div class="sch-time">10:00</div>
+            <div class="sch-dot" style="background:var(--purple)"></div>
+            <div class="sch-info">
+              <div class="sch-title">Chemistry Lab Review</div>
+              <div class="sch-sub">Reaction mechanisms</div>
+            </div>
+            <div class="sch-dur">90 min</div>
+          </div>
+          <div class="schedule-item">
+            <div class="sch-time">14:00</div>
+            <div class="sch-dot" style="background:var(--teal)"></div>
+            <div class="sch-info">
+              <div class="sch-title">English Literature</div>
+              <div class="sch-sub">Essay drafting</div>
+            </div>
+            <div class="sch-dur">60 min</div>
+          </div>
+        </div>
+        <div class="schedule-day">
+          <div class="day-label">Tuesday</div>
+          <div class="schedule-item">
+            <div class="sch-time">08:00</div>
+            <div class="sch-dot" style="background:var(--teal)"></div>
+            <div class="sch-info">
+              <div class="sch-title">Physics</div>
+              <div class="sch-sub">Electromagnetism</div>
+            </div>
+            <div class="sch-dur">90 min</div>
+          </div>
+          <div class="schedule-item">
+            <div class="sch-time">11:00</div>
+            <div class="sch-dot" style="background:var(--green)"></div>
+            <div class="sch-info">
+              <div class="sch-title">Biology</div>
+              <div class="sch-sub">Cell structure &amp; functions</div>
+            </div>
+            <div class="sch-dur">75 min</div>
+          </div>
+          <div class="schedule-item">
+            <div class="sch-time">15:00</div>
+            <div class="sch-dot" style="background:var(--red)"></div>
+            <div class="sch-info">
+              <div class="sch-title">Past Paper Practice</div>
+              <div class="sch-sub">Math 2023 paper</div>
+            </div>
+            <div class="sch-dur">120 min</div>
+          </div>
+        </div>
+        <div class="schedule-day">
+          <div class="day-label">Wednesday</div>
+          <div class="schedule-item">
+            <div class="sch-time">07:30</div>
+            <div class="sch-dot" style="background:var(--gold)"></div>
+            <div class="sch-info">
+              <div class="sch-title">Mathematics</div>
+              <div class="sch-sub">Statistics &amp; Probability</div>
+            </div>
+            <div class="sch-dur">90 min</div>
+          </div>
+          <div class="schedule-item">
+            <div class="sch-time">10:00</div>
+            <div class="sch-dot" style="background:var(--purple)"></div>
+            <div class="sch-info">
+              <div class="sch-title">History</div>
+              <div class="sch-sub">Modern history revision</div>
+            </div>
+            <div class="sch-dur">60 min</div>
+          </div>
+        </div>
+        <div class="schedule-day">
+          <div class="day-label">Thursday</div>
+          <div class="schedule-item">
+            <div class="sch-time">08:00</div>
+            <div class="sch-dot" style="background:var(--teal)"></div>
+            <div class="sch-info">
+              <div class="sch-title">Physics</div>
+              <div class="sch-sub">Optics &amp; Waves</div>
+            </div>
+            <div class="sch-dur">90 min</div>
+          </div>
+          <div class="schedule-item">
+            <div class="sch-time">13:00</div>
+            <div class="sch-dot" style="background:var(--gold)"></div>
+            <div class="sch-info">
+              <div class="sch-title">Mathematics</div>
+              <div class="sch-sub">Problem solving practice</div>
+            </div>
+            <div class="sch-dur">120 min</div>
+          </div>
+        </div>
+        <div class="schedule-day">
+          <div class="day-label">Friday</div>
+          <div class="schedule-item">
+            <div class="sch-time">09:00</div>
+            <div class="sch-dot" style="background:var(--green)"></div>
+            <div class="sch-info">
+              <div class="sch-title">Biology</div>
+              <div class="sch-sub">Genetics &amp; heredity</div>
+            </div>
+            <div class="sch-dur">75 min</div>
+          </div>
+          <div class="schedule-item">
+            <div class="sch-time">11:30</div>
+            <div class="sch-dot" style="background:var(--purple)"></div>
+            <div class="sch-info">
+              <div class="sch-title">Chemistry</div>
+              <div class="sch-sub">Organic chemistry review</div>
+            </div>
+            <div class="sch-dur">90 min</div>
+          </div>
+          <div class="schedule-item">
+            <div class="sch-time">15:00</div>
+            <div class="sch-dot" style="background:var(--red)"></div>
+            <div class="sch-info">
+              <div class="sch-title">Full Mock Test</div>
+              <div class="sch-sub">All subjects sprint</div>
+            </div>
+            <div class="sch-dur">180 min</div>
+          </div>
+        </div>
+        <div class="schedule-day">
+          <div class="day-label">Saturday — Light Review</div>
+          <div class="schedule-item">
+            <div class="sch-time">10:00</div>
+            <div class="sch-dot" style="background:var(--teal)"></div>
+            <div class="sch-info">
+              <div class="sch-title">Weekly Review</div>
+              <div class="sch-sub">Notes consolidation</div>
+            </div>
+            <div class="sch-dur">60 min</div>
+          </div>
+        </div>
+        <div class="schedule-day">
+          <div class="day-label">Sunday — Rest Day 🧘</div>
+          <div class="schedule-item">
+            <div class="sch-time">All day</div>
+            <div class="sch-dot" style="background:var(--green)"></div>
+            <div class="sch-info">
+              <div class="sch-title">Rest &amp; Recharge</div>
+              <div class="sch-sub">Mental health matters!</div>
+            </div>
+            <div class="sch-dur">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- POMODORO -->
+    <div class="view" id="view-pomodoro">
+      <div class="section-header">
+        <h2>Pomodoro Timer</h2>
+        <p>Stay focused with structured work sessions. Press Space to start/pause.</p>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <div class="pomodoro-center">
+            <div class="pom-modes">
+              <button class="pom-mode-btn active" onclick="setMode('focus',this)">Focus</button>
+              <button class="pom-mode-btn" onclick="setMode('short',this)">Short Break</button>
+              <button class="pom-mode-btn" onclick="setMode('long',this)">Long Break</button>
+            </div>
+            <div class="timer-ring-wrap">
+              <svg class="timer-ring" viewBox="0 0 200 200">
+                <circle class="ring-bg" cx="100" cy="100" r="88" />
+                <circle class="ring-fg" cx="100" cy="100" r="88" id="ring-fg" />
+              </svg>
+              <div class="timer-display">
+                <div class="timer-time" id="timer-display">25:00</div>
+                <div class="timer-mode-label" id="timer-mode-label">FOCUS SESSION</div>
+              </div>
+            </div>
+            <div class="pom-controls">
+              <button class="pom-btn sec-btn" onclick="resetTimer()" title="Reset">↺</button>
+              <button class="pom-btn main-btn" id="pom-toggle" onclick="toggleTimer()">▶</button>
+              <button class="pom-btn sec-btn" onclick="skipTimer()" title="Skip">⏭</button>
+            </div>
+            <div class="pom-sessions" id="pom-dots">
+              <div class="pom-dot"></div>
+              <div class="pom-dot"></div>
+              <div class="pom-dot"></div>
+              <div class="pom-dot"></div>
+            </div>
+            <div style="margin-top:10px;font-size:12px;color:var(--text3)">Session <span id="pom-session-num">1</span>
+              of 4</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📋 Focus Log</div>
+            <button class="card-action" onclick="clearLog()">Clear</button>
+          </div>
+          <div class="session-log" id="focus-log">
+            <div class="empty-state">
+              <div class="empty-icon">⏱️</div>
+              <p>Complete a session to log it!</p>
+            </div>
+          </div>
+          <div style="margin-top:24px">
+            <div class="card-title" style="margin-bottom:14px;font-size:14px">⚙️ Session Settings</div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <label
+                style="font-size:13px;color:var(--text2);display:flex;justify-content:space-between;align-items:center;gap:10px">
+                <span>Focus</span>
+                <input type="range" min="5" max="60" value="25" id="focus-range" oninput="updateDurations()"
+                  style="flex:1;accent-color:var(--gold)" />
+                <span id="focus-val"
+                  style="font-family:var(--font-mono);font-size:12px;color:var(--gold);min-width:38px">25 min</span>
+              </label>
+              <label
+                style="font-size:13px;color:var(--text2);display:flex;justify-content:space-between;align-items:center;gap:10px">
+                <span>Short Break</span>
+                <input type="range" min="1" max="15" value="5" id="short-range" oninput="updateDurations()"
+                  style="flex:1;accent-color:var(--teal)" />
+                <span id="short-val"
+                  style="font-family:var(--font-mono);font-size:12px;color:var(--teal);min-width:38px">5 min</span>
+              </label>
+              <label
+                style="font-size:13px;color:var(--text2);display:flex;justify-content:space-between;align-items:center;gap:10px">
+                <span>Long Break</span>
+                <input type="range" min="5" max="30" value="15" id="long-range" oninput="updateDurations()"
+                  style="flex:1;accent-color:var(--purple)" />
+                <span id="long-val"
+                  style="font-family:var(--font-mono);font-size:12px;color:var(--purple);min-width:38px">15 min</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBJECTS -->
+    <div class="view" id="view-subjects">
+      <div class="section-header">
+        <h2>My Subjects</h2>
+        <p>Track your progress across all subjects.</p>
+      </div>
+      <div class="subjects-grid" id="subjects-grid">
+        <!-- Subjects populated dynamically -->
+      </div>
+      <div class="card" style="margin-top:20px">
+        <div class="card-header">
+          <div class="card-title">💡 Study Tips</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">
+          <div style="background:var(--bg3);border-radius:10px;padding:14px;border:1px solid var(--border)">
+            <div style="font-weight:600;color:var(--gold);margin-bottom:6px">📐 Mathematics</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.6">Practice daily. Understand concepts before
+              memorizing. Use past papers regularly.</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:10px;padding:14px;border:1px solid var(--border)">
+            <div style="font-weight:600;color:var(--teal);margin-bottom:6px">⚡ Physics</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.6">Draw diagrams for every problem. Derive
+              formulas from basics to understand deeply.</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:10px;padding:14px;border:1px solid var(--border)">
+            <div style="font-weight:600;color:var(--purple);margin-bottom:6px">🧪 Chemistry</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.6">Use mnemonics for element groups. Practice
+              reaction mechanisms step by step.</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:10px;padding:14px;border:1px solid var(--border)">
+            <div style="font-weight:600;color:var(--green);margin-bottom:6px">📝 English</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.6">Read widely. Build vocab with flashcards.
+              Write daily to improve fluency.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="view" id="view-analytics">
+      <div class="section-header">
+        <h2>Analytics</h2>
+        <p>Track your study patterns and performance trends.</p>
+      </div>
+      <div class="three-col" style="margin-bottom:20px">
+        <div class="card">
+          <div class="card-title" style="margin-bottom:16px">📅 Weekly Study Hours</div>
+          <div class="weekly-chart">
+            <div class="chart-bar-wrap">
+              <div class="chart-bar" style="height:60%;background:linear-gradient(0deg,var(--gold),var(--gold2))"
+                data-val="4.5h"></div>
+              <div class="chart-day">Mon</div>
+            </div>
+            <div class="chart-bar-wrap">
+              <div class="chart-bar" style="height:80%;background:linear-gradient(0deg,var(--teal),#67e8f9)"
+                data-val="6h"></div>
+              <div class="chart-day">Tue</div>
+            </div>
+            <div class="chart-bar-wrap">
+              <div class="chart-bar" style="height:45%;background:linear-gradient(0deg,var(--purple),#c4b5fd)"
+                data-val="3.5h"></div>
+              <div class="chart-day">Wed</div>
+            </div>
+            <div class="chart-bar-wrap">
+              <div class="chart-bar" style="height:90%;background:linear-gradient(0deg,var(--green),#86efac)"
+                data-val="7h"></div>
+              <div class="chart-day">Thu</div>
+            </div>
+            <div class="chart-bar-wrap">
+              <div class="chart-bar" style="height:70%;background:linear-gradient(0deg,var(--gold),var(--gold2))"
+                data-val="5.5h"></div>
+              <div class="chart-day">Fri</div>
+            </div>
+            <div class="chart-bar-wrap">
+              <div class="chart-bar" style="height:30%;background:linear-gradient(0deg,var(--red),#fca5a5)"
+                data-val="2h"></div>
+              <div class="chart-day">Sat</div>
+            </div>
+            <div class="chart-bar-wrap">
+              <div class="chart-bar" style="height:10%;background:linear-gradient(0deg,var(--text3),#4a6580)"
+                data-val="0.5h"></div>
+              <div class="chart-day">Sun</div>
+            </div>
+          </div>
+          <div style="margin-top:10px;font-size:12px;color:var(--text3);text-align:center">Total: 29 hours this week
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom:16px">🎯 Completion Rate</div>
+          <div style="text-align:center;padding:20px 0">
+            <div style="font-family:var(--font-display);font-size:56px;font-weight:700;color:var(--green)">82%</div>
+            <div style="font-size:13px;color:var(--text2);margin-top:4px">Tasks completed on time</div>
+          </div>
+          <div style="display:flex;justify-content:space-around">
+            <div style="text-align:center">
+              <div style="font-size:20px;font-weight:700;color:var(--text)">41</div>
+              <div style="font-size:11px;color:var(--text3)">Done</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:20px;font-weight:700;color:var(--red)">9</div>
+              <div style="font-size:11px;color:var(--text3)">Overdue</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:20px;font-weight:700;color:var(--gold)">50</div>
+              <div style="font-size:11px;color:var(--text3)">Total</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom:16px">🔥 Streak &amp; Badges</div>
+          <div style="text-align:center;padding:10px 0">
+            <div style="font-size:40px">🔥</div>
+            <div style="font-family:var(--font-display);font-size:40px;font-weight:700;color:var(--gold)">7</div>
+            <div style="font-size:13px;color:var(--text2)">Day streak</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+            <div
+              style="background:rgba(232,184,75,.1);border:1px solid rgba(232,184,75,.2);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--gold)">
+              🏆 Week Warrior</div>
+            <div
+              style="background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--green)">
+              ⭐ Early Bird</div>
+            <div
+              style="background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--purple)">
+              🎯 Focus Master</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px">📚 Time Distribution by Subject</div>
+        <div id="analytics-subj-dist" style="display:flex;flex-direction:column;gap:12px">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTES -->
+    <div class="view" id="view-notes">
+      <div class="section-header">
+        <h2>Quick Notes</h2>
+        <p>Capture ideas, summaries, and key points instantly.</p>
+      </div>
+      <div class="note-add-area">
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <input class="input-field grow" type="text" id="note-title" placeholder="Note title..." />
+          <select class="input-field" id="note-subject">
+            <!-- Populated dynamically -->
+          </select>
+          <button class="btn btn-primary" onclick="addNote()">+ Save Note</button>
+        </div>
+        <textarea class="note-textarea" id="note-body" placeholder="Write your note here... Supports multiple lines." rows="3"></textarea>
+      </div>
+      <div class="notes-grid" id="notes-grid"></div>
+    </div>
+
+    <!-- GOALS -->
+    <div class="view" id="view-goals">
+      <div class="section-header">
+        <h2>Goal Tracker</h2>
+        <p>Set targets and track your progress with visual rings.</p>
+      </div>
+      <div class="task-add-bar" style="margin-bottom:24px">
+        <input class="input-field grow" type="text" id="goal-title" placeholder="e.g. Complete 20 math problems" />
+        <input class="input-field" type="number" id="goal-target" placeholder="Target" value="10" min="1" max="999" style="width:100px" />
+        <button class="btn btn-primary" onclick="addGoal()">+ Add Goal</button>
+      </div>
+      <div class="goals-grid" id="goals-grid"></div>
+    </div>
+
+    <!-- FLASHCARDS -->
+    <div class="view" id="view-flashcards">
+      <div class="section-header">
+        <h2>Flashcards</h2>
+        <p>Click the card to flip. Master concepts through active recall.</p>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <div class="flashcard-container" onclick="flipCard()">
+            <div class="flashcard" id="flashcard">
+              <div class="flashcard-face flashcard-front">
+                <div class="flashcard-label">Question</div>
+                <div class="flashcard-text" id="fc-front-text">Loading...</div>
+              </div>
+              <div class="flashcard-face flashcard-back">
+                <div class="flashcard-label">Answer</div>
+                <div class="flashcard-text" id="fc-back-text">Loading...</div>
+              </div>
+            </div>
+          </div>
+          <div class="fc-nav">
+            <button class="fc-btn" onclick="event.stopPropagation();prevCard()">← Prev</button>
+            <span class="fc-counter" id="fc-counter">1 / 4</span>
+            <button class="fc-btn" onclick="event.stopPropagation();nextCard()">Next →</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">➕ Add Flashcard</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <input class="input-field" type="text" id="fc-q" placeholder="Question (front side)" />
+            <textarea class="note-textarea" id="fc-a" placeholder="Answer (back side)" rows="3"></textarea>
+            <button class="btn btn-primary" onclick="addFlashcard()">+ Add Card</button>
+          </div>
+          <div style="margin-top:20px;padding:16px;background:var(--bg3);border-radius:10px;border:1px solid var(--border)">
+            <div style="font-size:13px;color:var(--text2);margin-bottom:6px">💡 Tips</div>
+            <div style="font-size:12px;color:var(--text3);line-height:1.7">• Click card to flip<br>• Use arrows to navigate<br>• Add your own Q&A pairs<br>• Great for active recall study</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESOURCES -->
+    <div class="view" id="view-resources">
+      <div class="section-header">
+        <h2>Study Resources</h2>
+        <p>Save and organize important links, PDFs, videos, and books.</p>
+      </div>
+      <div class="note-add-area">
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <input class="input-field grow" type="text" id="res-title" placeholder="Resource Title (e.g., Quantum Physics PDF)" />
+          <input class="input-field grow" type="url" id="res-url" placeholder="https://link-to-resource.com" />
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+          <select class="input-field" id="res-type">
+            <option value="Link">🌐 Website / Link</option>
+            <option value="PDF">📄 PDF Document</option>
+            <option value="Video">🎥 Video Lecture</option>
+            <option value="Book">📚 Book / Reading</option>
+          </select>
+          <select class="input-field grow" id="res-subject">
+            <!-- Populated dynamically -->
+          </select>
+          <button class="btn btn-primary" onclick="addResource()">+ Save Resource</button>
+        </div>
+      </div>
+      <div class="resources-grid" id="resources-grid"></div>
+    </div>
+
+  </main>
+
+  <!-- AMBIENT BAR -->
+  <div class="ambient-bar" id="ambient-bar">
+    <div class="ab-label">🎵 Ambient</div>
+    <div class="ambient-btns">
+      <button class="amb-btn" data-sound="rain" onclick="playAmbient('rain', this)">☔ Rain</button>
+      <button class="amb-btn" data-sound="waves" onclick="playAmbient('waves', this)">🌊 Waves</button>
+      <button class="amb-btn" data-sound="fire" onclick="playAmbient('fire', this)">🔥 Fireplace</button>
+      <button class="amb-btn" data-sound="forest" onclick="playAmbient('forest', this)">🌲 Forest</button>
+      <button class="amb-btn" data-sound="cafe" onclick="playAmbient('cafe', this)">☕ Café</button>
+    </div>
+    <div class="amb-vol">
+      <span style="font-size:12px;color:var(--text3)">🔊</span>
+      <input type="range" id="amb-vol-slider" min="0" max="100" value="60" oninput="changeAmbientVolume(this.value)" />
+    </div>
+    <button class="amb-close" onclick="toggleAmbient()">✕</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ─── DATA ───
+    let tasks = JSON.parse(localStorage.getItem('sf_tasks') || '[]');
+    let focusSessions = parseInt(localStorage.getItem('sf_sessions') || '0');
+    let studyHours = parseFloat(localStorage.getItem('sf_hours') || '0');
+
+    const QUOTES = [
+      { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
+      { text: "Success is the sum of small efforts, repeated day in and day out.", author: "Robert Collier" },
+      { text: "Education is the most powerful weapon to change the world.", author: "Nelson Mandela" },
+      { text: "The more that you read, the more things you will know.", author: "Dr. Seuss" },
+      { text: "An investment in knowledge pays the best interest.", author: "Benjamin Franklin" },
+      { text: "The beautiful thing about learning is that nobody can take it away.", author: "B.B. King" },
+      { text: "Genius is 1% inspiration and 99% perspiration.", author: "Thomas Edison" },
+    ];
+
+    // ─── INIT ───
+    function init() {
+      const now = new Date();
+      document.getElementById('date-chip').textContent = now.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+      const h = now.getHours();
+      document.getElementById('greet-text').textContent = (h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening') + ', Student! ✨';
+      const q = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+      document.getElementById('quote-text').textContent = '"' + q.text + '"';
+      document.getElementById('quote-author').textContent = '— ' + q.author;
+      document.getElementById('task-due').value = now.toISOString().split('T')[0];
+      renderTasks(); updateStats();
+      // Animate progress bars after short delay
+      setTimeout(() => {
+        document.querySelectorAll('.prog-fill[data-w]').forEach(el => {
+          el.style.width = el.dataset.w + '%';
+        });
+      }, 300);
+    }
+
+    // ─── SIDEBAR ───
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('overlay').classList.toggle('show');
+    }
+
+    // ─── VIEWS ───
+    const VIEW_TITLES = {
+      dashboard: 'Dashboard <span>— Overview</span>',
+      tasks: 'Task Planner <span>— Assignments</span>',
+      schedule: 'Schedule <span>— Weekly Plan</span>',
+      pomodoro: 'Pomodoro Timer <span>— Focus Mode</span>',
+      subjects: 'Subjects <span>— Progress</span>',
+      analytics: 'Analytics <span>— Insights</span>',
+      resources: 'Study Resources <span>— Links & Materials</span>',
+    };
+    function showView(id, el) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('view-' + id).classList.add('active');
+      if (el) el.classList.add('active');
+      document.getElementById('topbar-title').innerHTML = VIEW_TITLES[id] || id;
+      if (window.innerWidth < 768 && document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
+      // Animate progress bars when switching to analytics
+      if (id === 'analytics' || id === 'dashboard') {
+        setTimeout(() => {
+          document.querySelectorAll('#view-' + id + ' .prog-fill[data-w]').forEach(el => {
+            el.style.width = el.dataset.w + '%';
+          });
+        }, 100);
+      }
+    }
+
+    // ─── TASKS ───
+    function addTask() {
+      const input = document.getElementById('task-input');
+      const name = input.value.trim();
+      if (!name) { showToast('⚠️ Please enter a task name'); return; }
+      tasks.unshift({
+        id: Date.now(), name,
+        subject: document.getElementById('task-subject').value,
+        priority: document.getElementById('task-priority').value,
+        due: document.getElementById('task-due').value,
+        done: false
+      });
+      saveTasks(); renderTasks(); updateStats();
+      input.value = ''; showToast('✅ Task added successfully!');
+    }
+
+    function deleteTask(id) {
+      tasks = tasks.filter(t => t.id !== id);
+      saveTasks(); renderTasks(); updateStats();
+      showToast('🗑️ Task deleted');
+    }
+
+    function toggleTask(id) {
+      const t = tasks.find(t => t.id === id);
+      if (t) { t.done = !t.done; saveTasks(); renderTasks(); updateStats(); }
+    }
+
+    function saveTasks() { localStorage.setItem('sf_tasks', JSON.stringify(tasks)); }
+
+    function renderTasks() {
+      const cols = { high: [], med: [], low: [] };
+      tasks.forEach(t => cols[t.priority]?.push(t));
+
+      ['high', 'med', 'low'].forEach(p => {
+        document.getElementById('count-' + p).textContent = cols[p].length;
+        const el = document.getElementById('col-' + p);
+        if (!cols[p].length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">🎉</div><p>No tasks here!</p></div>'; return; }
+        el.innerHTML = cols[p].map(t => `
+      <div class="board-task ${t.done ? 'done' : ''}">
+        <button class="delete-task" onclick="deleteTask(${t.id})">✕</button>
+        <div class="board-task-title">${escHtml(t.name)}</div>
+        <div class="board-task-meta">
+          <span class="subject-tag">${escHtml(t.subject)}</span>
+          ${t.due ? `<span class="due-tag">📅 ${t.due}</span>` : ''}
+          <span class="priority-badge p-${t.priority}">${t.priority}</span>
+        </div>
+        <button onclick="toggleTask(${t.id})" style="font-size:11px;background:${t.done ? 'rgba(74,222,128,.15)' : 'var(--bg)'};color:${t.done ? 'var(--green)' : 'var(--text3)'};border:1px solid ${t.done ? 'rgba(74,222,128,.3)' : 'var(--border)'};border-radius:6px;padding:4px 12px;cursor:pointer;font-family:var(--font-body);transition:all .2s;margin-top:2px">
+          ${t.done ? '✓ Done' : 'Mark Done'}
+        </button>
+      </div>`).join('');
+      });
+
+      // Dashboard task list
+      const dashList = document.getElementById('dash-task-list');
+      const top = tasks.slice(0, 6);
+      if (!top.length) { dashList.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>No tasks yet. Add some!</p></div>'; }
+      else dashList.innerHTML = top.map(t => `
+    <div class="task-item ${t.done ? 'done' : ''}" onclick="toggleTask(${t.id})">
+      <div class="task-check ${t.done ? 'checked' : ''}">✓</div>
+      <div class="task-info">
+        <div class="task-name">${escHtml(t.name)}</div>
+        <div class="task-meta">${escHtml(t.subject)}${t.due ? ' · Due ' + t.due : ''}</div>
+      </div>
+      <span class="priority-badge p-${t.priority}">${t.priority}</span>
+    </div>`).join('');
+
+      const undone = tasks.filter(t => !t.done).length;
+      const badge = document.getElementById('badge-tasks');
+      badge.textContent = undone; badge.style.display = undone > 0 ? '' : 'none';
+    }
+
+    function updateStats() {
+      const total = tasks.length, done = tasks.filter(t => t.done).length;
+      const pct = total ? Math.round(done / total * 100) : 0;
+      document.getElementById('stat-total').textContent = total;
+      document.getElementById('stat-done-sub').textContent = done + ' completed';
+      document.getElementById('stat-pct').textContent = pct + '%';
+      document.getElementById('stat-remain').textContent = (total - done) + ' tasks remaining';
+      document.getElementById('stat-hours').textContent = studyHours.toFixed(1) + 'h';
+      document.getElementById('stat-focus').textContent = focusSessions;
+    }
+
+    function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    // ─── POMODORO ───
+    const CIRCUMFERENCE = 2 * Math.PI * 88;
+    let timerRunning = false, timerInterval = null, currentMode = 'focus';
+    let durations = { focus: 25 * 60, short: 5 * 60, long: 15 * 60 };
+    let timeLeft = 25 * 60, totalTime = 25 * 60, pomCount = 0;
+
+    function setMode(mode, el) {
+      clearInterval(timerInterval); timerRunning = false;
+      document.getElementById('pom-toggle').textContent = '▶';
+      currentMode = mode;
+      document.querySelectorAll('.pom-mode-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      timeLeft = totalTime = durations[mode];
+      const labels = { focus: 'FOCUS SESSION', short: 'SHORT BREAK', long: 'LONG BREAK' };
+      const colors = { focus: 'var(--gold)', short: 'var(--teal)', long: 'var(--purple)' };
+      document.getElementById('timer-mode-label').textContent = labels[mode];
+      document.getElementById('ring-fg').style.stroke = colors[mode];
+      renderTimer();
+    }
+
+    function toggleTimer() {
+      if (timerRunning) {
+        clearInterval(timerInterval); timerRunning = false;
+        document.getElementById('pom-toggle').textContent = '▶';
+      } else {
+        timerRunning = true;
+        document.getElementById('pom-toggle').textContent = '⏸';
+        timerInterval = setInterval(() => {
+          timeLeft--;
+          if (timeLeft <= 0) {
+            clearInterval(timerInterval); timerRunning = false;
+            document.getElementById('pom-toggle').textContent = '▶';
+            timeLeft = 0; renderTimer();
+            if (currentMode === 'focus') {
+              pomCount++; focusSessions++;
+              studyHours += durations.focus / 3600;
+              localStorage.setItem('sf_sessions', focusSessions);
+              localStorage.setItem('sf_hours', studyHours);
+              updateStats(); logSession(); updatePomDots();
+            }
+            showToast(currentMode === 'focus' ? '🎉 Focus session complete! Time for a break.' : '⏰ Break over! Back to work.');
+            return;
+          }
+          renderTimer();
+        }, 1000);
+      }
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval); timerRunning = false;
+      document.getElementById('pom-toggle').textContent = '▶';
+      timeLeft = totalTime = durations[currentMode];
+      renderTimer();
+    }
+
+    function skipTimer() { timeLeft = 0; renderTimer(); }
+
+    function renderTimer() {
+      const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
+      document.getElementById('timer-display').textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+      const prog = totalTime > 0 ? timeLeft / totalTime : 1;
+      document.getElementById('ring-fg').style.strokeDasharray = CIRCUMFERENCE;
+      document.getElementById('ring-fg').style.strokeDashoffset = CIRCUMFERENCE * (1 - prog);
+    }
+
+    function updateDurations() {
+      durations.focus = parseInt(document.getElementById('focus-range').value) * 60;
+      durations.short = parseInt(document.getElementById('short-range').value) * 60;
+      durations.long = parseInt(document.getElementById('long-range').value) * 60;
+      document.getElementById('focus-val').textContent = document.getElementById('focus-range').value + ' min';
+      document.getElementById('short-val').textContent = document.getElementById('short-range').value + ' min';
+      document.getElementById('long-val').textContent = document.getElementById('long-range').value + ' min';
+      if (!timerRunning) { timeLeft = totalTime = durations[currentMode]; renderTimer(); }
+    }
+
+    function updatePomDots() {
+      const dots = document.querySelectorAll('.pom-dot');
+      const idx = pomCount % 4;
+      dots.forEach((d, i) => d.classList.toggle('done', i < idx));
+      document.getElementById('pom-session-num').textContent = (idx || 4);
+    }
+
+    function logSession() {
+      const log = document.getElementById('focus-log');
+      if (log.querySelector('.empty-state')) log.innerHTML = '';
+      const now = new Date();
+      const item = document.createElement('div');
+      item.className = 'session-item';
+      item.innerHTML = `<div class="session-time">${now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</div><div class="session-subject">Focus Session #${focusSessions}</div><div class="session-mins">${Math.round(durations.focus / 60)} min</div>`;
+      log.prepend(item);
+    }
+
+    function clearLog() {
+      document.getElementById('focus-log').innerHTML = '<div class="empty-state"><div class="empty-icon">⏱️</div><p>Complete a session to log it!</p></div>';
+      showToast('🗑️ Log cleared');
+    }
+
+    // ─── TOAST ───
+    let toastTimer;
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // ─── KEYBOARD ───
+    document.addEventListener('keydown', e => {
+      if (e.code === 'Space' && e.target === document.body && document.getElementById('view-pomodoro').classList.contains('active')) {
+        e.preventDefault(); toggleTimer();
+      }
+    });
+
+    // ─── START ───
+    document.addEventListener('DOMContentLoaded', () => {
+      init(); renderTimer();
+      // Dismiss splash after 2s
+      setTimeout(() => {
+        const s = document.getElementById('splash');
+        if (s) { s.classList.add('hide'); setTimeout(() => s.remove(), 600); }
+      }, 2000);
+    });
+    // Fallback: click to dismiss splash
+    document.addEventListener('click', () => {
+      const s = document.getElementById('splash');
+      if (s) { s.classList.add('hide'); setTimeout(() => s.remove(), 600); }
+    });
+  </script>
+  <script src="particles.js"></script>
+  <script src="features.js"></script>
+  <script src="auth.js"></script>
+</body>
+
+</html>
