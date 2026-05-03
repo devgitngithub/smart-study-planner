@@ -35,7 +35,7 @@ const AUTH = {
   },
 
   async logout() {
-    try { await fetch(`${API}/logout`, { method: 'POST', credentials: 'include' }); } catch (e) {}
+    try { await fetch(`${API}/logout`, { method: 'POST', credentials: 'include' }); } catch (e) { }
     this.currentUser = null;
     location.reload();
   },
@@ -51,8 +51,10 @@ const AUTH = {
   },
 
   getEduLabel(id) {
-    const labels = { 'class5-8':'Class 5-8', 'class9-10':'Class 9-10', 'class11-12':'Class 11-12',
-                     'ug':'Undergraduate', 'pg':'Postgraduate', 'phd':'PhD / Research' };
+    const labels = {
+      'class5-8': 'Class 5-8', 'class9-10': 'Class 9-10', 'class11-12': 'Class 11-12',
+      'ug': 'Undergraduate', 'pg': 'Postgraduate', 'phd': 'PhD / Research'
+    };
     return labels[id] || id;
   }
 };
@@ -204,7 +206,7 @@ async function enterApp() {
     if (pmName) pmName.textContent = user.name;
     if (pmEmail) pmEmail.textContent = user.email;
     if (pmLevel) pmLevel.textContent = AUTH.getEduLabel(user.eduLevel);
-    
+
     renderDynamicSubjects(user.eduLevel);
   }
 
@@ -215,7 +217,7 @@ let resources = [];
 
 function renderDynamicSubjects(eduLevel) {
   const subjects = SUBJECT_CONFIG[eduLevel] || SUBJECT_CONFIG['ug'];
-  
+
   // 1. Populate the "My Subjects" Grid
   const grid = document.getElementById('subjects-grid');
   if (grid) {
@@ -291,7 +293,7 @@ async function loadAllData() {
 
 // ═══ OVERRIDE TASK FUNCTIONS FOR API ═══
 const _origAddTask = window.addTask;
-window.addTask = async function() {
+window.addTask = async function () {
   const input = document.getElementById('task-input');
   const name = input.value.trim();
   if (!name) { showToast('⚠️ Please enter a task name'); return; }
@@ -307,14 +309,14 @@ window.addTask = async function() {
   showToast('✅ Task added successfully!');
 };
 
-window.deleteTask = async function(id) {
+window.deleteTask = async function (id) {
   await api.del('/tasks/' + id);
   tasks = tasks.filter(t => t.id !== id);
   renderTasks(); updateStats();
   showToast('🗑️ Task deleted');
 };
 
-window.toggleTask = async function(id) {
+window.toggleTask = async function (id) {
   const t = tasks.find(t => t.id === id);
   if (t) {
     t.done = t.done ? 0 : 1;
@@ -323,10 +325,10 @@ window.toggleTask = async function(id) {
   }
 };
 
-window.saveTasks = function() { /* no-op — tasks saved via API now */ };
+window.saveTasks = function () { /* no-op — tasks saved via API now */ };
 
 // ═══ OVERRIDE NOTE FUNCTIONS FOR API ═══
-window.addNote = async function() {
+window.addNote = async function () {
   const t = document.getElementById('note-title'), b = document.getElementById('note-body'), s = document.getElementById('note-subject');
   if (!t || !b) return;
   const title = t.value.trim(), body = b.value.trim();
@@ -338,14 +340,14 @@ window.addNote = async function() {
   renderNotes(); showToast('📝 Note saved!');
 };
 
-window.deleteNote = async function(id) {
+window.deleteNote = async function (id) {
   await api.del('/notes/' + id);
   notes = notes.filter(n => n.id !== id);
   renderNotes(); showToast('🗑️ Note deleted');
 };
 
 // ═══ OVERRIDE GOAL FUNCTIONS FOR API ═══
-window.addGoal = async function() {
+window.addGoal = async function () {
   const t = document.getElementById('goal-title'), tgt = document.getElementById('goal-target');
   if (!t) return;
   const title = t.value.trim();
@@ -356,7 +358,7 @@ window.addGoal = async function() {
   renderGoals(); showToast('🎯 Goal added!');
 };
 
-window.incrementGoal = async function(id) {
+window.incrementGoal = async function (id) {
   const g = goals.find(g => g.id === id);
   if (g && g.current < g.target) {
     g.current++;
@@ -366,14 +368,14 @@ window.incrementGoal = async function(id) {
   }
 };
 
-window.deleteGoal = async function(id) {
+window.deleteGoal = async function (id) {
   await api.del('/goals/' + id);
   goals = goals.filter(g => g.id !== id);
   renderGoals(); showToast('🗑️ Goal removed');
 };
 
 // ═══ OVERRIDE FLASHCARD FUNCTIONS FOR API ═══
-window.addFlashcard = async function() {
+window.addFlashcard = async function () {
   const q = document.getElementById('fc-q'), a = document.getElementById('fc-a');
   if (!q || !a) return;
   if (!q.value.trim() || !a.value.trim()) { showToast('⚠️ Fill both sides'); return; }
@@ -384,41 +386,41 @@ window.addFlashcard = async function() {
 };
 
 // ═══ RESOURCES FUNCTIONS FOR API ═══
-window.addResource = async function() {
+window.addResource = async function () {
   const title = document.getElementById('res-title').value.trim();
   const url = document.getElementById('res-url').value.trim();
   const type = document.getElementById('res-type').value;
   const subject = document.getElementById('res-subject').value.trim();
-  
+
   if (!title || !url) { showToast('⚠️ Enter title and URL'); return; }
   if (!url.startsWith('http')) { showToast('⚠️ URL must start with http:// or https://'); return; }
-  
+
   const res = await api.post('/resources', { title, url, type, subject });
   resources.unshift(res);
-  
+
   document.getElementById('res-title').value = '';
   document.getElementById('res-url').value = '';
   renderResources();
   showToast('📚 Resource added!');
 };
 
-window.deleteResource = async function(id) {
+window.deleteResource = async function (id) {
   await api.del('/resources/' + id);
   resources = resources.filter(r => r.id !== id);
   renderResources();
   showToast('🗑️ Resource deleted');
 };
 
-window.renderResources = function() {
+window.renderResources = function () {
   const grid = document.getElementById('resources-grid');
   if (!grid) return;
   if (!resources.length) {
     grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📚</div><p>No study resources yet. Add some links or PDFs!</p></div>';
     return;
   }
-  
+
   const icons = { 'Link': '🌐', 'PDF': '📄', 'Video': '🎥', 'Book': '📚' };
-  
+
   grid.innerHTML = resources.map(r => `
     <div class="res-card">
       <button class="res-delete" onclick="deleteResource(${r.id})">✕</button>
@@ -437,7 +439,7 @@ window.renderResources = function() {
 };
 
 // ═══ OVERRIDE STATS SAVE ═══
-window.saveStatsToAPI = async function() {
+window.saveStatsToAPI = async function () {
   await api.put('/stats', { focus_sessions: focusSessions, study_hours: studyHours, streak: 7 });
 };
 
@@ -450,7 +452,7 @@ if (_origToggleTimer) {
   const _patchInterval = setInterval(() => {
     if (typeof logSession === 'function') {
       const _origLogSession = logSession;
-      window.logSession = function() {
+      window.logSession = function () {
         _origLogSession();
         saveStatsToAPI();
       };

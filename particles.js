@@ -4,16 +4,16 @@ if (canvas) {
   const ctx = canvas.getContext('2d');
   let w, h, particles = [];
   let particleColor = '232, 184, 75'; // gold by default
-  
-  window.updateParticlesTheme = function(theme) {
+
+  window.updateParticlesTheme = function (theme) {
     particleColor = theme === 'light' ? '148, 163, 184' : '232, 184, 75'; // slate in light mode, gold in dark mode
   };
-  
+
   function resize() {
     w = canvas.width = innerWidth;
     h = canvas.height = innerHeight;
   }
-  
+
   function Particle() {
     this.x = Math.random() * w;
     this.y = Math.random() * h;
@@ -22,7 +22,7 @@ if (canvas) {
     this.dy = (Math.random() - 0.5) * 0.4;
     this.a = Math.random() * 0.3 + 0.1;
   }
-  
+
   function draw() {
     ctx.clearRect(0, 0, w, h);
     particles.forEach(p => {

@@ -36,7 +36,7 @@
       --shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
       --bar-bg: rgba(13, 17, 23, 0.85);
     }
-    
+
     :root[data-theme="light"] {
       --bg: #f8fafc;
       --bg2: #f1f5f9;
@@ -365,7 +365,7 @@
     .stat-card:hover {
       transform: translateY(-4px);
       border-color: transparent;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
     }
 
     .stat-card::before {
@@ -440,9 +440,9 @@
       box-shadow: var(--shadow);
       transition: transform .3s, box-shadow .3s;
     }
-    
+
     .card:hover {
-      box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
     }
 
     .card-header {
@@ -1331,7 +1331,9 @@
   <div class="splash" id="splash">
     <div class="splash-logo">📚</div>
     <div class="splash-text">Study<span>Flow</span></div>
-    <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+    <div class="splash-bar">
+      <div class="splash-bar-fill"></div>
+    </div>
   </div>
 
   <!-- AUTH SCREEN -->
@@ -1344,8 +1346,12 @@
     <div class="auth-container">
       <div class="auth-card">
         <div class="auth-logo">
-          <div class="logo-icon" style="width:48px;height:48px;background:linear-gradient(135deg,var(--gold),var(--teal));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px">📚</div>
-          <div class="logo-text" style="font-family:var(--font-display);font-size:26px;font-weight:700;color:var(--text)">Study<span style="color:var(--gold)">Flow</span></div>
+          <div class="logo-icon"
+            style="width:48px;height:48px;background:linear-gradient(135deg,var(--gold),var(--teal));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px">
+            📚</div>
+          <div class="logo-text"
+            style="font-family:var(--font-display);font-size:26px;font-weight:700;color:var(--text)">Study<span
+              style="color:var(--gold)">Flow</span></div>
         </div>
         <div class="auth-subtitle">Your personalized study companion — from Class 5 to PhD</div>
 
@@ -1395,9 +1401,12 @@
           <div class="auth-field">
             <label>Education Level</label>
             <div class="auth-edu-grid">
-              <div class="edu-option" onclick="selectEdu('class5-8',this)"><span class="edu-icon">📚</span>Class 5–8</div>
-              <div class="edu-option" onclick="selectEdu('class9-10',this)"><span class="edu-icon">📖</span>Class 9–10</div>
-              <div class="edu-option" onclick="selectEdu('class11-12',this)"><span class="edu-icon">🎓</span>Class 11–12</div>
+              <div class="edu-option" onclick="selectEdu('class5-8',this)"><span class="edu-icon">📚</span>Class 5–8
+              </div>
+              <div class="edu-option" onclick="selectEdu('class9-10',this)"><span class="edu-icon">📖</span>Class 9–10
+              </div>
+              <div class="edu-option" onclick="selectEdu('class11-12',this)"><span class="edu-icon">🎓</span>Class 11–12
+              </div>
               <div class="edu-option" onclick="selectEdu('ug',this)"><span class="edu-icon">🏛️</span>Undergrad</div>
               <div class="edu-option" onclick="selectEdu('pg',this)"><span class="edu-icon">📜</span>Postgrad</div>
               <div class="edu-option" onclick="selectEdu('phd',this)"><span class="edu-icon">🔬</span>PhD</div>
@@ -1425,7 +1434,8 @@
     <div class="cmd-box">
       <div class="cmd-input-wrap">
         <span class="cmd-icon">🔍</span>
-        <input class="cmd-input" id="cmd-search" placeholder="Type a command..." oninput="filterCmds(this.value)" autocomplete="off" />
+        <input class="cmd-input" id="cmd-search" placeholder="Type a command..." oninput="filterCmds(this.value)"
+          autocomplete="off" />
         <span class="cmd-kbd">ESC</span>
       </div>
       <div class="cmd-results" id="cmd-results"></div>
@@ -1458,7 +1468,8 @@
       <div class="nav-item" onclick="showView('goals',this)"><span class="nav-icon">🎯</span> Goals</div>
       <div class="nav-item" onclick="showView('flashcards',this)"><span class="nav-icon">🃏</span> Flashcards</div>
       <div class="nav-item" onclick="showView('resources',this)"><span class="nav-icon">📚</span> Resources</div>
-      <button class="music-btn" id="music-toggle" onclick="toggleAmbient()"><span class="nav-icon">🎵</span> Ambient Music</button>
+      <button class="music-btn" id="music-toggle" onclick="toggleAmbient()"><span class="nav-icon">🎵</span> Ambient
+        Music</button>
     </nav>
     <div class="sidebar-footer">
       <div class="streak-card">
@@ -1486,7 +1497,9 @@
             <div class="profile-menu-email" id="pm-email">—</div>
             <div class="profile-menu-level" id="pm-level">—</div>
           </div>
-          <button class="profile-menu-item" onclick="showView('dashboard',document.querySelectorAll('.nav-item')[0]);toggleProfileMenu()">📊 My Dashboard</button>
+          <button class="profile-menu-item"
+            onclick="showView('dashboard',document.querySelectorAll('.nav-item')[0]);toggleProfileMenu()">📊 My
+            Dashboard</button>
           <button class="profile-menu-item" onclick="exportData();toggleProfileMenu()">📤 Export My Data</button>
           <button class="profile-menu-item danger" onclick="AUTH.logout()">🚪 Sign Out</button>
         </div>
@@ -2046,7 +2059,8 @@
           </select>
           <button class="btn btn-primary" onclick="addNote()">+ Save Note</button>
         </div>
-        <textarea class="note-textarea" id="note-body" placeholder="Write your note here... Supports multiple lines." rows="3"></textarea>
+        <textarea class="note-textarea" id="note-body" placeholder="Write your note here... Supports multiple lines."
+          rows="3"></textarea>
       </div>
       <div class="notes-grid" id="notes-grid"></div>
     </div>
@@ -2059,7 +2073,8 @@
       </div>
       <div class="task-add-bar" style="margin-bottom:24px">
         <input class="input-field grow" type="text" id="goal-title" placeholder="e.g. Complete 20 math problems" />
-        <input class="input-field" type="number" id="goal-target" placeholder="Target" value="10" min="1" max="999" style="width:100px" />
+        <input class="input-field" type="number" id="goal-target" placeholder="Target" value="10" min="1" max="999"
+          style="width:100px" />
         <button class="btn btn-primary" onclick="addGoal()">+ Add Goal</button>
       </div>
       <div class="goals-grid" id="goals-grid"></div>
@@ -2100,9 +2115,11 @@
             <textarea class="note-textarea" id="fc-a" placeholder="Answer (back side)" rows="3"></textarea>
             <button class="btn btn-primary" onclick="addFlashcard()">+ Add Card</button>
           </div>
-          <div style="margin-top:20px;padding:16px;background:var(--bg3);border-radius:10px;border:1px solid var(--border)">
+          <div
+            style="margin-top:20px;padding:16px;background:var(--bg3);border-radius:10px;border:1px solid var(--border)">
             <div style="font-size:13px;color:var(--text2);margin-bottom:6px">💡 Tips</div>
-            <div style="font-size:12px;color:var(--text3);line-height:1.7">• Click card to flip<br>• Use arrows to navigate<br>• Add your own Q&A pairs<br>• Great for active recall study</div>
+            <div style="font-size:12px;color:var(--text3);line-height:1.7">• Click card to flip<br>• Use arrows to
+              navigate<br>• Add your own Q&A pairs<br>• Great for active recall study</div>
           </div>
         </div>
       </div>
@@ -2116,7 +2133,8 @@
       </div>
       <div class="note-add-area">
         <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <input class="input-field grow" type="text" id="res-title" placeholder="Resource Title (e.g., Quantum Physics PDF)" />
+          <input class="input-field grow" type="text" id="res-title"
+            placeholder="Resource Title (e.g., Quantum Physics PDF)" />
           <input class="input-field grow" type="url" id="res-url" placeholder="https://link-to-resource.com" />
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
