@@ -289,6 +289,10 @@ async function loadAllData() {
   resources = await api.get('/resources');
 
   renderNotes(); renderGoals(); renderFlashcard(); renderResources();
+
+  if (typeof checkUrgentTasks === 'function') {
+    checkUrgentTasks();
+  }
 }
 
 // ═══ OVERRIDE TASK FUNCTIONS FOR API ═══

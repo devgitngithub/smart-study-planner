@@ -2172,6 +2172,47 @@
     <button class="amb-close" onclick="toggleAmbient()">✕</button>
   </div>
 
+  <!-- URGENT REMINDER MODAL -->
+  <div class="reminder-overlay" id="urgent-reminder">
+    <div class="reminder-modal">
+      <div class="reminder-icon">🚨</div>
+      <div class="reminder-title">Urgent Tasks Reminder!</div>
+      <div class="reminder-desc">You have high-priority tasks due soon. Let's crush them!</div>
+      <div class="reminder-task-list" id="urgent-tasks-list">
+        <!-- populated dynamically -->
+      </div>
+      <button class="reminder-btn" onclick="closeUrgentReminder()">Got it, let's study!</button>
+    </div>
+  </div>
+
+  <!-- STUDYBUDDY CHATBOT -->
+  <div id="chatbot-widget" class="chatbot-widget">
+    <button class="chatbot-toggle" id="chatbot-toggle" onclick="toggleChatbot()">
+      <span class="bot-icon">🤖</span>
+      <span class="bot-badge" id="bot-badge" style="display:none">1</span>
+    </button>
+    <div class="chatbot-window" id="chatbot-window">
+      <div class="chatbot-header">
+        <div class="cb-header-left">
+          <div class="cb-avatar">🤖</div>
+          <div class="cb-info">
+            <div class="cb-name">StudyBuddy</div>
+            <div class="cb-status">Online</div>
+          </div>
+        </div>
+        <button class="cb-close" onclick="toggleChatbot()">✕</button>
+      </div>
+      <div class="chatbot-messages" id="chatbot-messages">
+        <!-- Messages populate dynamically -->
+      </div>
+      <div class="chatbot-input-area">
+        <input type="text" id="chatbot-input" class="cb-input" placeholder="Ask about tasks, motivation..."
+          onkeypress="handleChatKeyPress(event)">
+        <button class="cb-send" onclick="sendChatMessage()">➤</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script>
@@ -2179,6 +2220,142 @@
     let tasks = JSON.parse(localStorage.getItem('sf_tasks') || '[]');
     let focusSessions = parseInt(localStorage.getItem('sf_sessions') || '0');
     let studyHours = parseFloat(localStorage.getItem('sf_hours') || '0');
+
+    // ─── URGENT TASKS ───
+    function getYYYYMMDD(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function checkUrgentTasks() {
+      const todayStr = getYYYYMMDD(new Date());
+      const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowStr = getYYYYMMDD(tomorrow);
+
+      const lastNotified = localStorage.getItem('sf_last_notified');
+      if (lastNotified === todayStr) return; // Already shown today
+
+      const urgentTasks = tasks.filter(t =>
+        (t.done === false || t.done === 0) &&
+        t.priority === 'high' &&
+        t.due &&
+        t.due <= tomorrowStr
+      );
+
+      if (urgentTasks.length > 0) {
+        const listEl = document.getElementById('urgent-tasks-list');
+        listEl.innerHTML = urgentTasks.map(t => `
+          <div class="reminder-task-item">
+            <div class="rt-name">${escHtml(t.name)}</div>
+            <div class="rt-due">${t.due === todayStr ? 'Today' : (t.due === tomorrowStr ? 'Tomorrow' : t.due)}</div>
+          </div>
+        `).join('');
+
+        document.getElementById('urgent-reminder').classList.add('show');
+      }
+    }
+
+    function closeUrgentReminder() {
+      document.getElementById('urgent-reminder').classList.remove('show');
+      const todayStr = getYYYYMMDD(new Date());
+      localStorage.setItem('sf_last_notified', todayStr);
+    }
+
+    // ─── CHATBOT LOGIC ───
+    let chatbotOpen = false;
+    let botHasWelcomed = false;
+
+    function toggleChatbot() {
+      chatbotOpen = !chatbotOpen;
+      const win = document.getElementById('chatbot-window');
+      const badge = document.getElementById('bot-badge');
+      if (chatbotOpen) {
+        win.classList.add('open');
+        badge.style.display = 'none';
+        if (!botHasWelcomed) {
+          sendBotWelcome();
+          botHasWelcomed = true;
+        }
+      } else {
+        win.classList.remove('open');
+      }
+    }
+
+    function appendMessage(sender, text) {
+      const msgs = document.getElementById('chatbot-messages');
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `cb-msg ${sender}`;
+      msgDiv.innerHTML = `<div class="cb-bubble">${text}</div><div class="cb-time">${time}</div>`;
+      msgs.appendChild(msgDiv);
+      msgs.scrollTop = msgs.scrollHeight;
+
+      if (sender === 'bot' && !chatbotOpen) {
+        document.getElementById('bot-badge').style.display = 'flex';
+      }
+    }
+
+    function sendBotWelcome() {
+      appendMessage('bot', "Hi there! I'm StudyBuddy. 👋<br><br>I can remind you of your tasks, show your stats, or give you some motivation! Try saying <span class='cb-highlight'>'tasks'</span>, <span class='cb-highlight'>'motivate'</span>, or <span class='cb-highlight'>'stats'</span>.");
+
+      // Proactive reminder check
+      const tomorrowStr = getYYYYMMDD(new Date(new Date().getTime() + 86400000));
+      const urgent = tasks.filter(t => (t.done === false || t.done === 0) && t.priority === 'high' && t.due && t.due <= tomorrowStr);
+
+      if (urgent.length > 0) {
+        setTimeout(() => {
+          let html = "🚨 <b>Reminder!</b> You have high-priority tasks due soon:<div class='cb-urgent-list'>";
+          urgent.forEach(t => { html += `• ${escHtml(t.name)}<br>`; });
+          html += "</div>Let's get these done! 💪";
+          appendMessage('bot', html);
+        }, 1000);
+      }
+    }
+
+    function handleChatKeyPress(e) {
+      if (e.key === 'Enter') sendChatMessage();
+    }
+
+    function sendChatMessage() {
+      const input = document.getElementById('chatbot-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      appendMessage('user', text);
+      input.value = '';
+
+      // Simulate bot thinking
+      setTimeout(() => processBotResponse(text.toLowerCase()), 500);
+    }
+
+    const MOTIVATIONS = [
+      "You've got this! Every small step counts. 🌟",
+      "Believe in yourself! The hard work will pay off. 💫",
+      "Don't stop until you're proud. Keep pushing! 🚀",
+      "Focus on your goals, not the obstacles. 🎯"
+    ];
+
+    function processBotResponse(text) {
+      if (text.includes('task') || text.includes('todo') || text.includes('work')) {
+        const pending = tasks.filter(t => t.done === false || t.done === 0);
+        if (pending.length === 0) {
+          appendMessage('bot', "You have no pending tasks! Great job taking a break. 🏖️");
+        } else {
+          appendMessage('bot', `You have <span class='cb-highlight'>${pending.length} pending task(s)</span>. Focus on the high-priority ones first! 📋`);
+        }
+      } else if (text.includes('motivat') || text.includes('inspire') || text.includes('quote')) {
+        const quote = MOTIVATIONS[Math.floor(Math.random() * MOTIVATIONS.length)];
+        appendMessage('bot', quote);
+      } else if (text.includes('stat') || text.includes('progress') || text.includes('hour')) {
+        appendMessage('bot', `You've completed <span class='cb-highlight'>${focusSessions}</span> focus sessions and studied for <span class='cb-highlight'>${studyHours}</span> hours. Keep it up! 📈`);
+      } else if (text.includes('hi') || text.includes('hello') || text.includes('hey')) {
+        appendMessage('bot', "Hello again! How can I help you study today? 😊");
+      } else {
+        appendMessage('bot', "I'm not sure about that. Try asking me about your <span class='cb-highlight'>'tasks'</span>, <span class='cb-highlight'>'stats'</span>, or ask for <span class='cb-highlight'>'motivation'</span>! 🤔");
+      }
+    }
 
     const QUOTES = [
       { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },

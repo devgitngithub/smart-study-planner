@@ -15,7 +15,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, 'studyflow.db')
 
 app = Flask(__name__, static_folder=BASE_DIR)
-app.secret_key = secrets.token_hex(32)
+app.secret_key = 'studyflow_dev_secret_key_123'
 CORS(app, supports_credentials=True)
 
 # ─── DATABASE ───────────────────────────────────────────────
@@ -439,10 +439,10 @@ def static_files(path):
 
 if __name__ == '__main__':
     init_db()
-    print("\n  +-----------------------------------------+")
-    print("  |  StudyFlow Server Running!              |")
-    print("  |  URL: http://localhost:5000             |")
-    print("  |  Database: studyflow.db                 |")
-    print("  |  Press Ctrl+C to stop                   |")
-    print("  +-----------------------------------------+\n")
+    print("\n  +-----------------------------------------+", flush=True)
+    print("  |  StudyFlow Server Running!              |", flush=True)
+    print("  |  URL: http://localhost:5000             |", flush=True)
+    print("  |  Database: studyflow.db                 |", flush=True)
+    print("  |  Press Ctrl+C to stop                   |", flush=True)
+    print("  +-----------------------------------------+\n", flush=True)
     app.run(debug=True, port=5000)
